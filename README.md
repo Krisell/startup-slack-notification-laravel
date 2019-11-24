@@ -11,6 +11,7 @@ composer require krisell/startup-slack-notification-laravel
 The package is configured for automatic discovery, so unless you have other settings, you do not need to manually add the service provider.
 
 ## Usage
+Run the command `startup-notification:slack` during server boot.
 
 ## Licence
 MIT
