@@ -25,7 +25,7 @@ class ServerStartupNotification extends Notification
         }
 
         return (new SlackMessage)
-            ->image('https://cdn.exam.net/img/logo-white-small.png')
+            ->image(config('startup-slack-notification.image'))
             ->success()
             ->content("Server started! – ".config('app.name'))
             ->attachment(function ($attachment) use ($fields) {

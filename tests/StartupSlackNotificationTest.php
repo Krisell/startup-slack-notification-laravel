@@ -28,7 +28,7 @@ class StartupSlackNotificationTest extends TestCase
     }
 
     /** @test */
-    function the_env_slack_hook_is_set()
+    function the_specified_slack_hook_is_used()
     {
         Notification::fake();
         config(['startup-slack-notification.slack-hook' => 'my-test-slack-hook']);
@@ -43,11 +43,56 @@ class StartupSlackNotificationTest extends TestCase
     }
 
     /** @test */
+    function the_expected_default_data_is_included_in_the_message()
+    {
+        Notification::fake();
+
+        $this->artisan('startup-notification:slack');
+
+        Notification::assertSentTo(
+            new AnonymousNotifiable, ServerStartupNotification::class, function ($notification) {
+                $message = $notification->toSlack();
+                $this->assertEquals('', $message->image);
+                $this->assertEquals('Server started! – Laravel', $message->content);
+                $this->assertEquals('No version set', $message->attachments[0]->fields['Version']);
+                $this->assertEquals('testing', $message->attachments[0]->fields['Env']);
+
+                return true;
+            }
+        );
+    }
+
+    /** @test */
+    function the_specified_data_is_included_in_the_message()
+    {
+        Notification::fake();
+        config([
+            'startup-slack-notification.image' => 'my-image-url',
+            'app.name' => 'Test app',
+            'deployed-version.version' => '123',
+            'app.env' => 'testing-2',
+        ]);
+
+        $this->artisan('startup-notification:slack');
+
+        Notification::assertSentTo(
+            new AnonymousNotifiable, ServerStartupNotification::class, function ($notification) {
+                $message = $notification->toSlack();
+                $this->assertEquals('my-image-url', $message->image);
+                $this->assertEquals('Server started! – Test app', $message->content);
+                $this->assertEquals('123', $message->attachments[0]->fields['Version']);
+                $this->assertEquals('testing-2', $message->attachments[0]->fields['Env']);
+
+                return true;
+            }
+        );
+    }
+
+    /** @test */
     function the_real_slack_hook_sends_a_noficiation()
     {
-        $this->withoutExceptionHandling();
         config([
-            'startup-slack-notification.slack-hook' => file_get_contents(__DIR__.'/.hook'),
+            'startup-slack-notification.slack-hook' => '', //file_get_contents(__DIR__.'/.hook'),
             'deployed-version.version' => 'my-test-suite-version',
         ]);
 
