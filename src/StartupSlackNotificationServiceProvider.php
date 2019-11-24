@@ -14,6 +14,10 @@ class StartupSlackNotificationServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([StartupSlackNotificationCommand::class]);
         }
+
+        $this->publishes([
+            __DIR__.'/config/startup-slack-notification.php' => config_path('startup-slack-notification.php'),
+        ]);
     }
 
 

@@ -92,7 +92,7 @@ class StartupSlackNotificationTest extends TestCase
     function the_real_slack_hook_sends_a_noficiation()
     {
         config([
-            'startup-slack-notification.slack-hook' => '', //file_get_contents(__DIR__.'/.hook'),
+            'startup-slack-notification.slack-hook' => file_get_contents(__DIR__.'/.hook'),
             'deployed-version.version' => 'my-test-suite-version',
         ]);
 
