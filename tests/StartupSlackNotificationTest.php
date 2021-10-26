@@ -53,7 +53,7 @@ class StartupSlackNotificationTest extends TestCase
             new AnonymousNotifiable, ServerStartupNotification::class, function ($notification) {
                 $message = $notification->toSlack();
                 $this->assertEquals('', $message->image);
-                $this->assertEquals('Server started! – Laravel', $message->content);
+                $this->assertEquals('Server started! - Laravel', $message->content);
                 $this->assertEquals('No version set', $message->attachments[0]->fields['Version']);
                 $this->assertEquals('testing', $message->attachments[0]->fields['Env']);
 
@@ -79,9 +79,41 @@ class StartupSlackNotificationTest extends TestCase
             new AnonymousNotifiable, ServerStartupNotification::class, function ($notification) {
                 $message = $notification->toSlack();
                 $this->assertEquals('my-image-url', $message->image);
-                $this->assertEquals('Server started! – Test app', $message->content);
+                $this->assertEquals('Server started! - Test app', $message->content);
                 $this->assertEquals('123', $message->attachments[0]->fields['Version']);
                 $this->assertEquals('testing-2', $message->attachments[0]->fields['Env']);
+
+                return true;
+            }
+        );
+    }
+
+    /** @test */
+    function arbitrary_additional_data_can_be_added()
+    {
+        Notification::fake();
+        config([
+            'startup-slack-notification.image' => 'my-image-url',
+            'app.name' => 'Test app',
+            'deployed-version.version' => '123',
+            'app.env' => 'testing-2',
+            'services.startup-slack-notification.data' => [
+                'some' => 'extra',
+                'arbitrary' => 'data',
+            ],
+        ]);
+
+        $this->artisan('startup-notification:slack');
+
+        Notification::assertSentTo(
+            new AnonymousNotifiable, ServerStartupNotification::class, function ($notification) {
+                $message = $notification->toSlack();
+                $this->assertEquals('my-image-url', $message->image);
+                $this->assertEquals('Server started! - Test app', $message->content);
+                $this->assertEquals('123', $message->attachments[0]->fields['Version']);
+                $this->assertEquals('testing-2', $message->attachments[0]->fields['Env']);
+                $this->assertEquals('extra', $message->attachments[0]->fields['some']);
+                $this->assertEquals('data', $message->attachments[0]->fields['arbitrary']);
 
                 return true;
             }
@@ -94,6 +126,10 @@ class StartupSlackNotificationTest extends TestCase
         config([
             'startup-slack-notification.slack-hook' => file_get_contents(__DIR__.'/.hook'),
             'deployed-version.version' => 'my-test-suite-version',
+            'services.startup-slack-notification.data' => [
+                'some' => 'extra',
+                'arbitrary' => 'data',
+            ],
         ]);
 
         config(['app.name' => 'Phpunit testsuite of slack-package.']);
