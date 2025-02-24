@@ -3,6 +3,7 @@
 namespace Krisell\StartupSlackNotificationLaravel\Tests;
 
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Notifications\SlackChannelServiceProvider;
@@ -18,7 +19,7 @@ class StartupSlackNotificationTest extends TestCase
         ];
     }
 
-    /** @test */
+    #[Test]
     function the_command_is_registered_and_outputs_expected_info()
     {
         Notification::fake();
@@ -27,7 +28,7 @@ class StartupSlackNotificationTest extends TestCase
             ->expectsOutput('Startup slack notification was sent!');
     }
 
-    /** @test */
+    #[Test]
     function the_specified_slack_hook_is_used()
     {
         Notification::fake();
@@ -42,7 +43,7 @@ class StartupSlackNotificationTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     function the_expected_default_data_is_included_in_the_message()
     {
         Notification::fake();
@@ -55,14 +56,14 @@ class StartupSlackNotificationTest extends TestCase
                 $this->assertEquals('', $message->image);
                 $this->assertEquals('Server started! - Laravel', $message->content);
                 $this->assertEquals('No version set', $message->attachments[0]->fields['Version']);
-                $this->assertEquals('testing', $message->attachments[0]->fields['Env']);
+                $this->assertEquals('workbench', $message->attachments[0]->fields['Env']);
 
                 return true;
             }
         );
     }
 
-    /** @test */
+    #[Test]
     function the_specified_data_is_included_in_the_message()
     {
         Notification::fake();
@@ -88,7 +89,7 @@ class StartupSlackNotificationTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     function arbitrary_additional_data_can_be_added()
     {
         Notification::fake();
@@ -120,7 +121,7 @@ class StartupSlackNotificationTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     function the_real_slack_hook_sends_a_noficiation()
     {
         config([
