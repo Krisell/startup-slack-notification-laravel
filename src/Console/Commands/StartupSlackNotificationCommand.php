@@ -39,10 +39,14 @@ class StartupSlackNotificationCommand extends Command
      */
     public function handle()
     {
-        Notification::route(
-            'slack',
-            config('startup-slack-notification.slack-hook')
-        )->notify(new ServerStartupNotification());
+        $hook = config('startup-slack-notification.slack-hook');
+
+        if (empty($hook)) {
+            $this->warn('No Slack webhook URL configured. Set STARTUP_SLACK_HOOK in your .env file or as an environment variable.');
+            return;
+        }
+
+        Notification::route('slack', $hook)->notify(new ServerStartupNotification());
 
         $this->info("Startup slack notification was sent!");
     }

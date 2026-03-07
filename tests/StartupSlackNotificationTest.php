@@ -20,9 +20,22 @@ class StartupSlackNotificationTest extends TestCase
     }
 
     #[Test]
+    function the_command_warns_when_no_slack_hook_is_configured()
+    {
+        Notification::fake();
+        config(['startup-slack-notification.slack-hook' => '']);
+
+        $this->artisan('startup-notification:slack')
+            ->expectsOutput('No Slack webhook URL configured. Set STARTUP_SLACK_HOOK in your .env file or as an environment variable.');
+
+        Notification::assertNothingSent();
+    }
+
+    #[Test]
     function the_command_is_registered_and_outputs_expected_info()
     {
         Notification::fake();
+        config(['startup-slack-notification.slack-hook' => 'https://hooks.slack.com/test']);
 
         $this->artisan('startup-notification:slack')
             ->expectsOutput('Startup slack notification was sent!');
@@ -47,6 +60,7 @@ class StartupSlackNotificationTest extends TestCase
     function the_expected_default_data_is_included_in_the_message()
     {
         Notification::fake();
+        config(['startup-slack-notification.slack-hook' => 'https://hooks.slack.com/test']);
 
         $this->artisan('startup-notification:slack');
 
@@ -68,6 +82,7 @@ class StartupSlackNotificationTest extends TestCase
     {
         Notification::fake();
         config([
+            'startup-slack-notification.slack-hook' => 'https://hooks.slack.com/test',
             'startup-slack-notification.image' => 'my-image-url',
             'app.name' => 'Test app',
             'deployed-version.version' => '123',
@@ -94,6 +109,7 @@ class StartupSlackNotificationTest extends TestCase
     {
         Notification::fake();
         config([
+            'startup-slack-notification.slack-hook' => 'https://hooks.slack.com/test',
             'startup-slack-notification.image' => 'my-image-url',
             'app.name' => 'Test app',
             'deployed-version.version' => '123',
